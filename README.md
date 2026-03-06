@@ -85,6 +85,8 @@ wrangler deploy
 
 `https://month-report-auto-proxy.<your-subdomain>.workers.dev`
 
+部署成功的地址是： https://liz-server-woerker.workers.dev
+
 3. 可选：限制允许访问来源（推荐）
 
 在 Cloudflare Worker 控制台中为该 Worker 添加环境变量：
