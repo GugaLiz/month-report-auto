@@ -62,16 +62,57 @@ git push origin main
 
 例如：`https://GugaLiz.github.io/month-report-auto/`
 
-### 4. 重要说明（在线版）
+### 4. 部署 Cloudflare Worker 代理（在线版必做）
 
-- 本项目在本地开发环境通过 Vite 代理转发 Worktile 请求。
-- GitHub Pages 是纯静态托管，不提供后端代理能力。
-- 如果浏览器对 Worktile 接口触发 CORS 限制，在线版会出现请求失败。
+> GitHub Pages 仅提供静态页面，无法代理 Worktile 请求。
+> 需要先部署 Worker，再把 Worker 地址注入前端构建变量。
 
-可选方案：
+1. 安装并登录 Wrangler
 
-- 继续本地运行（推荐，功能完整）：`npm run dev`
-- 单独部署一个后端代理服务（例如 Cloudflare Worker / Render / Railway），再对接在线页面
+```bash
+npm install -g wrangler
+wrangler login
+```
+
+2. 部署 Worker（在项目根目录执行）
+
+```bash
+cd worker
+wrangler deploy
+```
+
+部署成功后你会得到 Worker 地址，例如：
+
+`https://month-report-auto-proxy.<your-subdomain>.workers.dev`
+
+3. 可选：限制允许访问来源（推荐）
+
+在 Cloudflare Worker 控制台中为该 Worker 添加环境变量：
+
+- 变量名：`ALLOWED_ORIGIN`
+- 变量值：`https://<你的GitHub用户名>.github.io`
+
+4. 回到 GitHub 仓库配置前端构建变量
+
+打开 `Settings` -> `Secrets and variables` -> `Actions` -> `Variables`，新增：
+
+- Name: `VITE_PROXY_BASE_URL`
+- Value: `https://month-report-auto-proxy.<your-subdomain>.workers.dev`
+
+5. 重新触发 Pages 构建发布
+
+```bash
+git add .
+git commit -m "chore: configure cloudflare worker proxy"
+git push origin main
+```
+
+### 5. 验证是否生效
+
+1. 打开在线页面：`https://<你的GitHub用户名>.github.io/month-report-auto/`
+2. 在浏览器访问 Worker 健康检查：`https://<worker域名>/health`
+3. 返回 `{"ok":true,"service":"worktile-proxy"}` 说明代理正常
+4. 回到页面配置 Cookie 并点击“获取工时数据”进行实测
 
 ## 使用说明
 

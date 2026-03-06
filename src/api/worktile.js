@@ -4,9 +4,27 @@ import { getCookie, getProjectIds, getMemberId } from '../utils/storage.js'
 
 /**
  * API 基础配置
- * 开发环境使用代理，生产环境使用完整 URL
+ * 开发环境使用 Vite 代理，生产环境优先使用 Worker 代理地址
  */
-const API_BASE_URL = import.meta.env.DEV ? '' : 'https://webxsj.worktile.com'
+function normalizeBaseUrl(value) {
+  if (!value) return ''
+  return value.endsWith('/') ? value.slice(0, -1) : value
+}
+
+function getApiBaseUrl() {
+  if (import.meta.env.DEV) {
+    return ''
+  }
+
+  const workerBaseUrl = normalizeBaseUrl(import.meta.env.VITE_PROXY_BASE_URL)
+  if (workerBaseUrl) {
+    return workerBaseUrl
+  }
+
+  return 'https://webxsj.worktile.com'
+}
+
+const API_BASE_URL = getApiBaseUrl()
 
 /**
  * 创建 axios 实例
@@ -28,7 +46,7 @@ apiClient.interceptors.request.use(
   config => {
     const cookie = getCookie()
     if (cookie) {
-      // 在开发环境中，通过自定义头传递 Cookie（代理会将其转换为真正的 Cookie 头）
+      // 通过自定义头传递 Cookie（Vite/Worker 代理会转换为真正的 Cookie 头）
       config.headers['x-worktile-cookie'] = cookie
     }
     return config

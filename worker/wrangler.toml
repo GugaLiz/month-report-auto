@@ -1,0 +1,7 @@
+name = "month-report-auto-proxy"
+main = "src/index.js"
+compatibility_date = "2026-03-06"
+
+# Optional: set from dashboard for stricter CORS
+# [vars]
+# ALLOWED_ORIGIN = "https://gugaliz.github.io"
