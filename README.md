@@ -38,6 +38,41 @@ npm run dev
 npm run build
 ```
 
+## 部署到 GitHub Pages
+
+### 1. 推送代码到 GitHub
+
+```bash
+git add .
+git commit -m "chore: add github pages deployment"
+git push origin main
+```
+
+### 2. 开启 Pages
+
+1. 打开仓库 `Settings` -> `Pages`
+2. 在 `Build and deployment` 中选择 `Source: GitHub Actions`
+3. 等待仓库中的 `Deploy to GitHub Pages` 工作流执行完成
+
+### 3. 访问地址
+
+页面会发布到：
+
+`https://<你的GitHub用户名>.github.io/month-report-auto/`
+
+例如：`https://GugaLiz.github.io/month-report-auto/`
+
+### 4. 重要说明（在线版）
+
+- 本项目在本地开发环境通过 Vite 代理转发 Worktile 请求。
+- GitHub Pages 是纯静态托管，不提供后端代理能力。
+- 如果浏览器对 Worktile 接口触发 CORS 限制，在线版会出现请求失败。
+
+可选方案：
+
+- 继续本地运行（推荐，功能完整）：`npm run dev`
+- 单独部署一个后端代理服务（例如 Cloudflare Worker / Render / Railway），再对接在线页面
+
 ## 使用说明
 
 1. **配置 Cookie**

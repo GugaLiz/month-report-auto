@@ -1,7 +1,12 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 
+const repositoryName = process.env.GITHUB_REPOSITORY?.split('/')[1] || ''
+const isGitHubActions = process.env.GITHUB_ACTIONS === 'true'
+const pagesBase = isGitHubActions && repositoryName ? `/${repositoryName}/` : '/'
+
 export default defineConfig({
+  base: pagesBase,
   plugins: [vue()],
   server: {
     port: 3000,
