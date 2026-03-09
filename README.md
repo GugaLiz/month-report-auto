@@ -85,7 +85,7 @@ wrangler deploy
 
 `https://month-report-auto-proxy.<your-subdomain>.workers.dev`
 
-部署成功的地址是： https://liz-server-woerker.workers.dev
+部署成功的地址是：https://month-report-auto-proxy.liz-server-woerker.workers.dev
 
 3. 可选：限制允许访问来源（推荐）
 
