@@ -87,15 +87,21 @@ export async function fetchWorkloadData(startDate, endDate) {
     },
     project_ids: getProjectIds(),
     member_ids: [getMemberId()],
-    group_by: 'day',
     entry_type: 1,
     type_ids: []
   }
 
   try {
     const response = await apiClient.post(
-      '/api/mission-vnext/workload/report/workload-day-detail/group',
-      params
+      '/api/mission-vnext/workload/report/workload-member-detail/group',
+      params,
+      {
+        params: {
+          pi: 0,
+          ps: 20,
+          t: Date.now()
+        }
+      }
     )
     return response
   } catch (error) {
@@ -114,16 +120,26 @@ export function parseWorkloadData(data) {
   }
 
   const references = data.data.references
-  const tasks = references.tasks || []
-  const entries = references.entries || []
+  const groupValues = Array.isArray(data.data.value) ? data.data.value : []
+  const groupedEntryIds = new Set(
+    groupValues.flatMap(item => Array.isArray(item.items) ? item.items : [])
+  )
+  const entries = (references.entries || []).filter(entry => {
+    return groupedEntryIds.size === 0 || groupedEntryIds.has(entry._id)
+  })
 
   // 构建任务工时映射表 { taskId: totalHours }
   const taskTimeMap = {}
+  const relevantTaskIds = new Set()
   entries.forEach(entry => {
     const taskId = entry.task_id
     const duration = entry.duration || 0
+    if (!taskId) return
+    relevantTaskIds.add(taskId)
     taskTimeMap[taskId] = (taskTimeMap[taskId] || 0) + duration
   })
+
+  const tasks = (references.tasks || []).filter(task => relevantTaskIds.has(task._id))
 
   // 提取任务列表（去重和增强信息）
   const taskList = tasks.map(task => ({

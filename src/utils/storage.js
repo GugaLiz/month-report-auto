@@ -3,6 +3,10 @@
  */
 
 const STORAGE_PREFIX = 'month_report_'
+const LEGACY_DEFAULT_PROJECT_IDS = [
+  '66a9fd0526a6ce0007bc2c73',
+  '621ed84824cdc85eafdf9195'
+]
 
 /**
  * Cookie 存储键
@@ -104,10 +108,17 @@ export function saveProjectIds(projectIds) {
  * @returns {Array<string>} 项目 ID 数组
  */
 export function getProjectIds() {
-  return getStorage(STORAGE_KEYS.PROJECT_IDS, [
-    '66a9fd0526a6ce0007bc2c73',
-    '621ed84824cdc85eafdf9195'
-  ])
+  const projectIds = getStorage(STORAGE_KEYS.PROJECT_IDS, [])
+
+  if (!Array.isArray(projectIds)) {
+    return []
+  }
+
+  const isLegacyDefault =
+    projectIds.length === LEGACY_DEFAULT_PROJECT_IDS.length &&
+    projectIds.every((id, index) => id === LEGACY_DEFAULT_PROJECT_IDS[index])
+
+  return isLegacyDefault ? [] : projectIds
 }
 
 /**

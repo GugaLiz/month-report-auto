@@ -2,6 +2,10 @@
 document.addEventListener('DOMContentLoaded', () => {
   const { createApp, ref, computed, onMounted } = Vue
   const ElementPlusIconsVue = window.ElementPlusIconsVue
+  const LEGACY_DEFAULT_PROJECT_IDS = [
+    '66a9fd0526a6ce0007bc2c73',
+    '621ed84824cdc85eafdf9195'
+  ]
 
   // 节假日数据
   const HOLIDAYS_2026 = {
@@ -169,15 +173,19 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         project_ids: projectIds,
         member_ids: [memberId],
-        group_by: 'day',
         entry_type: 1,
         type_ids: []
       }
 
       const response = await axios.post(
-        'https://webxsj.worktile.com/api/mission-vnext/workload/report/workload-day-detail/group',
+        'https://webxsj.worktile.com/api/mission-vnext/workload/report/workload-member-detail/group',
         params,
         {
+          params: {
+            pi: 0,
+            ps: 20,
+            t: Date.now()
+          },
           headers: {
             'Accept': 'application/json, text/plain, */*',
             'Content-Type': 'application/json',
@@ -196,16 +204,26 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       const references = data.data.references
-      const tasks = references.tasks || []
-      const entries = references.entries || []
+      const groupValues = Array.isArray(data.data.value) ? data.data.value : []
+      const groupedEntryIds = new Set(
+        groupValues.flatMap(item => Array.isArray(item.items) ? item.items : [])
+      )
+      const entries = (references.entries || []).filter(entry => {
+        return groupedEntryIds.size === 0 || groupedEntryIds.has(entry._id)
+      })
 
       // 构建任务工时映射表
       const taskTimeMap = {}
+      const relevantTaskIds = new Set()
       entries.forEach(entry => {
         const taskId = entry.task_id
         const duration = entry.duration || 0
+        if (!taskId) return
+        relevantTaskIds.add(taskId)
         taskTimeMap[taskId] = (taskTimeMap[taskId] || 0) + duration
       })
+
+      const tasks = (references.tasks || []).filter(task => relevantTaskIds.has(task._id))
 
       // 提取任务列表
       const taskList = tasks.map(task => ({
@@ -257,13 +275,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const showSettings = ref(false)
 
       // 设置
+      const storedProjectIds = utils.storage.get('project_ids', [])
+      const normalizedProjectIds = Array.isArray(storedProjectIds) &&
+        storedProjectIds.length === LEGACY_DEFAULT_PROJECT_IDS.length &&
+        storedProjectIds.every((id, index) => id === LEGACY_DEFAULT_PROJECT_IDS[index])
+        ? []
+        : (Array.isArray(storedProjectIds) ? storedProjectIds : [])
+
       const settings = ref({
         cookie: utils.storage.get('worktile_cookie', ''),
         memberId: utils.storage.get('member_id', '0fa3263e47624b1e8b40e278a93bd074'),
-        projectIds: utils.storage.get('project_ids', [
-          '66a9fd0526a6ce0007bc2c73',
-          '621ed84824cdc85eafdf9195'
-        ])
+        projectIds: normalizedProjectIds
       })
 
       const projectIdsText = computed({

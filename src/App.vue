@@ -265,7 +265,7 @@
             v-model="projectIdsText"
             type="textarea"
             :rows="3"
-            placeholder="项目ID（多个用逗号分隔）"
+            placeholder="项目ID（留空查询全部项目，多个用逗号分隔）"
           />
         </el-form-item>
       </el-form>
